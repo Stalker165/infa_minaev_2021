@@ -62,8 +62,8 @@ def bear(color, x, y, m):
     w_leg = 190 * m
     h_foot = 50 * m
     w_foot = 140 * m
-    circle(screen, bear_color, (x + (96-64)*m, y - (140+30)*m), 12)  # ухо
-    circle(screen, black, (x + (96-64)*m, y - (140+28)*m), 12, 1)  # обводка
+    circle(screen, bear_color, (x + (96-64)*m, y - (140+40)*m), 12)  # ухо
+    circle(screen, black, (x + (96-64)*m, y - (140+40)*m), 12, 1)  # обводка
     ellipse(screen, color, (x + 96*m - w_head/2, y - 140*m - h_head/2, w_head, h_head))  # голова
     ellipse(screen, black, (x + 96*m - w_head/2, y - 140*m - h_head/2, w_head, h_head), 1)
     circle(screen, black, (x + (96-12)*m, y - (140+14)*m), 7*m, 0)  # глаз
@@ -83,7 +83,24 @@ def bear(color, x, y, m):
     ellipse(screen, color, (x + 200*m - w_foot/2, y + 330*m - h_foot/2, w_foot, h_foot))  # задняя лапа (стопа)
     ellipse(screen, black, (x + 200*m - w_foot/2, y + 330*m - h_foot/2, w_foot, h_foot), 1)
 
-# def fish(x, y, m)
+
+def fish(x, y, m):
+    color_1 = (191, 203, 200)
+    color_2 = (221, 166, 166)
+    a = 50 * m
+    b = 25 * m
+    r = 5 * m
+    polygon(screen, color_2, ((x + 0.6*a, y), (x + 0.6*a - 2*b, y - 2*b),
+                              (x - a, y - b), (x - 8*a/10, y)))  # плавник
+    polygon(screen, black, ((x + 0.6*a, y), (x + 0.6*a - 2*b, y - 2*b),
+                            (x - a, y - b), (x - 8*a/10, y)), 1)
+    polygon(screen, color_1, ((x - 8*a/10, y), (x - 2*a, y + b), (x - 2*a, y - b)))  # хвост
+    polygon(screen, black, ((x - 8*a/10, y), (x - 2*a, y + b), (x - 2*a, y - b)), 1)
+    ellipse(screen, color_1, (x - a, y - b, 2 * a, 2 * b))  # тело
+    ellipse(screen, black, (x - a, y - b, 2 * a, 2 * b), 1)
+    circle(screen, (121, 121, 242), (x + 0.6*a, y), r)  # глаз
+    circle(screen, black, (x + 0.6*a, y), r - 2*m)  # зрачок
+    circle(screen, (255, 255, 255), (x + 0.6*a - 1*m, y - 1*m), r - 3*m)  # блик
 
 
 FPS = 30
@@ -102,6 +119,7 @@ line(screen, (0, 0, 0), (0, horizont), (screen_x, horizont))
 
 sun(sun_color, 472, 193, 230, 230, 40)
 bear(bear_color, 135, 650, 1)
+fish(620, 970, 1)
 
 pygame.image.save(screen, "bear.png")
 
