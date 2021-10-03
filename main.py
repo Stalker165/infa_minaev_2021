@@ -62,8 +62,8 @@ def bear(color, x, y, m):
     w_leg = 190 * m
     h_foot = 50 * m
     w_foot = 140 * m
-    circle(screen, bear_color, (x + (96-64)*m, y - (140+40)*m), 12)  # ухо
-    circle(screen, black, (x + (96-64)*m, y - (140+40)*m), 12, 1)  # обводка
+    circle(screen, bear_color, (x + (96-64)*m, y - (140+40)*m), 12*m)  # ухо
+    circle(screen, black, (x + (96-64)*m, y - (140+40)*m), 12*m, 1)  # обводка
     ellipse(screen, color, (x + 96*m - w_head/2, y - 140*m - h_head/2, w_head, h_head))  # голова
     ellipse(screen, black, (x + 96*m - w_head/2, y - 140*m - h_head/2, w_head, h_head), 1)
     circle(screen, black, (x + (96-12)*m, y - (140+14)*m), 7*m, 0)  # глаз
@@ -103,6 +103,16 @@ def fish(x, y, m):
     circle(screen, (255, 255, 255), (x + 0.6*a - 1*m, y - 1*m), r - 3*m)  # блик
 
 
+def bearandfish(x, y, m):
+    fish(x + 490*m, y + 320*m, m)
+    fish(x + 400*m, y + 300*m, m)
+    fish(x + 490*m, y + 320*m, m)
+    fish(x + 600*m, y + 260*m, m)
+    fish(x + 490*m, y + 20*m, 0.6*m)
+    fish(x + 350*m, y + 60*m, 0.6*m)
+    bear(bear_color, x, y, m)
+
+
 FPS = 30
 screen_x = 794
 screen_y = 1123
@@ -113,13 +123,12 @@ horizont = 621  # линия горизонта
 rect(screen, sky_color, (0, 0, screen_x, horizont))  # вторая точка указывается относительно первой!
 rect(screen, snow_color, (0, horizont, screen_x, screen_y))
 line(screen, (0, 0, 0), (0, horizont), (screen_x, horizont))
-# polygon(screen, (0, 0, 0), [(120, 120), (130, 120),
-#                            (185, 165), (180, 170)])
-# arc(screen, (255, 255, 255), (500, 500, 600, 600), 0, 3.14)
 
 sun(sun_color, 472, 193, 230, 230, 40)
-bear(bear_color, 135, 650, 1)
-fish(620, 970, 1)
+bearandfish(140, horizont, 0.2)
+bearandfish(85, 800, 0.8)
+bearandfish(500, 650, 0.3)
+bearandfish(85, 800, 0.8)
 
 pygame.image.save(screen, "bear.png")
 

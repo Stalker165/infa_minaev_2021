@@ -62,8 +62,8 @@ def bear(color, x, y, m):
     w_leg = 190 * m
     h_foot = 50 * m
     w_foot = 140 * m
-    circle(screen, bear_color, (x + (96-64)*m, y - (140+40)*m), 12)  # ухо
-    circle(screen, black, (x + (96-64)*m, y - (140+40)*m), 12, 1)  # обводка
+    circle(screen, bear_color, (x + (96-64)*m, y - (140+40)*m), 12*m)  # ухо
+    circle(screen, black, (x + (96-64)*m, y - (140+40)*m), 12*m, 1)  # обводка
     ellipse(screen, color, (x + 96*m - w_head/2, y - 140*m - h_head/2, w_head, h_head))  # голова
     ellipse(screen, black, (x + 96*m - w_head/2, y - 140*m - h_head/2, w_head, h_head), 1)
     circle(screen, black, (x + (96-12)*m, y - (140+14)*m), 7*m, 0)  # глаз
