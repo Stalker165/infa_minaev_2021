@@ -11,16 +11,27 @@ snow_color = (230, 230, 230)
 pi = 3.14
 
 def glare(color, x, y, r):
-    # имитация источника света
+    '''
+    имитация источника света
+    '''
     layer = pygame.Surface((screen_x, screen_y))
     layer.set_colorkey((0, 0, 0))
     for i in range(int(r)):  # здесь он ругался на то, что r это float, не знаю, почему
         layer.set_alpha(25 - i*25/r)
-        ellipse(layer, color, (x - 2*i, y - 2*i, 4*i, 4*i))
+        ellipse(layer, color, (x - 2 * i, y - 2 * i, 4 * i, 4 * i))
         screen.blit(layer, (0, 0))
 
 
 def sun(color, x, y, a, b, w):
+    '''
+    Рисование солнца
+    color - цвет
+    x - координата центра солнца по горизонтали
+    y - координата центра солнца по вертикали
+    a - ширина солнца
+    b - высота солнца
+    w - относительный размер блика
+    '''
     glare(color, x, y, w * 2.5)
     glare(color, x - a + w / 2, y, w * 2)
     glare(color, x + a - w / 2, y, w * 2)
@@ -49,7 +60,13 @@ def sun(color, x, y, a, b, w):
 
 
 def bear(color, x, y, m):
-    #m - переменная масштабирования
+    '''
+    Рисует медведя
+    color - цвет
+    x - координата медведя по горизонтали
+    y - координата медведя по вертикали
+    m - переменная масштабирования
+    '''
     w_head = 176 * m
     h_head = 96 * m
     w_body = 256 * m
@@ -85,6 +102,12 @@ def bear(color, x, y, m):
 
 
 def fish(x, y, m):
+    '''
+    Рисует рыбу
+    x - координата рыбы по горизонтали
+    y - координата рыбы по вертикали
+    m - масштаб
+    '''
     color_1 = (191, 203, 200)
     color_2 = (221, 166, 166)
     a = 50 * m
@@ -104,6 +127,12 @@ def fish(x, y, m):
 
 
 def bearandfish(x, y, m):
+    '''
+    Создание шаблона из медведя и 5 рыбок
+    x - координата по горизонтали
+    y - координата по вертикали
+    m - масштаб
+    '''
     fish(x + 490*m, y + 320*m, m)
     fish(x + 400*m, y + 300*m, m)
     fish(x + 490*m, y + 320*m, m)
@@ -122,7 +151,7 @@ horizont = 621  # линия горизонта
 
 rect(screen, sky_color, (0, 0, screen_x, horizont))  # вторая точка указывается относительно первой!
 rect(screen, snow_color, (0, horizont, screen_x, screen_y))
-line(screen, (0, 0, 0), (0, horizont), (screen_x, horizont))
+line(screen, black, (0, horizont), (screen_x, horizont))
 
 sun(sun_color, 472, 193, 230, 230, 40)
 bearandfish(140, horizont, 0.2)
