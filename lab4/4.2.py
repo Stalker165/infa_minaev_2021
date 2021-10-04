@@ -135,7 +135,6 @@ def bearandfish(x, y, m):
     '''
     fish(x + 490*m, y + 320*m, m)
     fish(x + 400*m, y + 300*m, m)
-    fish(x + 490*m, y + 320*m, m)
     fish(x + 600*m, y + 260*m, m)
     fish(x + 490*m, y + 20*m, 0.6*m)
     fish(x + 350*m, y + 60*m, 0.6*m)
@@ -143,8 +142,8 @@ def bearandfish(x, y, m):
 
 
 FPS = 30
-screen_x = 794
-screen_y = 1123
+screen_x = 794  # ширина окошка
+screen_y = 1123  # высота окошка
 screen = pygame.display.set_mode((screen_x, screen_y))
 
 horizont = 621  # линия горизонта
@@ -155,7 +154,6 @@ line(screen, black, (0, horizont), (screen_x, horizont))
 
 sun(sun_color, 472, 193, 230, 230, 40)
 bearandfish(140, horizont, 0.2)
-bearandfish(85, 800, 0.8)
 bearandfish(500, 650, 0.3)
 bearandfish(85, 800, 0.8)
 
