@@ -16,7 +16,7 @@ def glare(color, x, y, r):
     color - цвет свечения
     x - координата центра облака света по горизонтали
     y - координата центра облака света по вертикали
-    r - радиус свечения#ECB2AF
+    r - радиус свечения
     '''
     layer = pygame.Surface((screen_x, screen_y))
     layer.set_colorkey((0, 0, 0))
