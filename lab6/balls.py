@@ -1,27 +1,40 @@
-import pygame
+import pygame as pg
 from pygame.draw import *
 from random import randint
-pygame.init()
+pg.init()
 
 FPS = 30
 size = 800  # сделаем экран квадратным со стороной size
-screen = pygame.display.set_mode((size, size))
-font = pygame.font.Font(None, 40)  # шрифт, которым будем писать счёт
-font_name = pygame.font.match_font('arial')
+screen = pg.display.set_mode((size, size))
+font = pg.font.Font(None, 40)  # шрифт, которым будем писать счёт
+font_name = pg.font.match_font('arial')
 
 # declare colors
 WHITE = (255, 255, 255)
 CRIMSON = (220, 20, 60)
-STEELBLUE = (70, 130, 180)
 SEAGREEN = (46, 139, 87)
 BLUEVIOLET = (138, 43, 226)
 DODGERBLUE = (30, 144, 255)
 GOLDENROD = (218, 165, 32)
 DEEPPINK = (255, 20, 147)
-SANDYBROWN = (244, 164, 96)
 BLACK = (0, 0, 0)
-COLORS = [CRIMSON, STEELBLUE, SEAGREEN, BLUEVIOLET, DODGERBLUE, GOLDENROD, DEEPPINK, SANDYBROWN]
+COLORS = [CRIMSON, SEAGREEN, BLUEVIOLET, DODGERBLUE, GOLDENROD, DEEPPINK]
 N = 5  # number of initial generating balls on the screen
+
+
+def parameters():
+    """
+    choose random parameters of coordinates (x, y), speed (Vx, Vy), radius (r), color for balls
+    returns these parameters as list
+    """
+    x = randint(0, size)
+    y = randint(0, size)
+    Vx = randint(-35, 35)
+    Vy = randint(-35, 35)
+    r = randint(30, 50)
+    color = COLORS[randint(0, len(COLORS) - 1)]
+    return [x, y, Vx, Vy, r, color]
+
 
 def new_ball(N):
     """
@@ -29,24 +42,25 @@ def new_ball(N):
     x, y -- coordinates
     r -- radius
     N -- number of balls
-    E -- variable of existing (after click becomes 0)
     """
-    global x, y, Vx, Vy, r, color, E
-    x = []
-    y = []
-    Vx = []
-    Vy = []
-    r = []
-    color = []
-    E = [1]*N
+    global x, y, Vx, Vy, r, color
+    x = [0]*N
+    y = [0]*N
+    Vx = [0]*N
+    Vy = [0]*N
+    r = [0]*N
+    color = [0]*N
     for i in range(0, N):
-        x.append(randint(0, size))
-        y.append(randint(0, size))
-        Vx.append(randint(-40, 40))
-        Vy.append(randint(-40, 40))
-        r.append(randint(30, 50))
-        color.append(COLORS[randint(0, len(COLORS)-1)])
+        x[i], y[i], Vx[i], Vy[i], r[i], color[i] = parameters()
         circle(screen, color[i], (x[i], y[i]), r[i])
+
+
+def re_ball(i):
+    """
+    describes behavior of ball after click -- recreate the ball like new
+    i -- number of ball
+    """
+    x[i], y[i], Vx[i], Vy[i], r[i], color[i] = parameters()
 
 
 def draw_text(surf, text, size, x, y):
@@ -56,54 +70,84 @@ def draw_text(surf, text, size, x, y):
     size -- size of text
     x, y -- position
     """
-    font = pygame.font.Font(font_name, size)
+    font = pg.font.Font(font_name, size)
     text_surface = font.render(text, True, WHITE)
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
 
-pygame.display.update()
-clock = pygame.time.Clock()
+
+def physics_of_hit(i):
+    """
+    describes behavior of the ball when it hit the wall and changes parameters
+    i -- number of ball
+    """
+    if x[i] <= 0:  # physics of hits
+        x[i] = 0
+        Vx[i] = -Vx[i]
+    elif x[i] >= size:
+        x[i] = size
+        Vx[i] = -Vx[i]
+    elif y[i] <= 0:
+        y[i] = 0
+        Vy[i] = -Vy[i]
+    elif y[i] >= size:
+        y[i] = size
+        Vy[i] = -Vy[i]
+
+
+pg.mixer.init()
+chpok = pg.mixer.Sound('chpok.ogg')
+pg.mixer.music.load('forest theme.mp3')
+
+pg.display.update()
+clock = pg.time.Clock()
 finished = False
 
-count = 0  # creates a counter that counts points -- number of clicks by ball
+timer = 0  # creates timer
+score = 0  # creates a counter that counts points -- number of clicks by ball
+jackpot_count = 1  # counts how many balls have some colors. Jackpot can be got <= 1 times
 new_ball(N)  # creates N balls
+pg.mixer.music.play(-1)
 
-while not finished:
+while not finished and timer <= 2999:
     clock.tick(FPS)
-    text = font.render(str(count), True, WHITE)
-    place = text.get_rect(center=(size / 2, 30))
+    timer += 1
+
+    text = font.render(str(score), True, WHITE)
+    place = text.get_rect(center=(size / 3, 30))
     screen.blit(text, place)  # creates text with count
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+
+    text = font.render(str(int((timer * 30 / 1000) // 1)), True, WHITE)
+    place = text.get_rect(center=(3 * size / 4, 30))
+    screen.blit(text, place)  # creates text with timer
+
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
             finished = True
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pg.MOUSEBUTTONDOWN:
+            if jackpot_count > 0:
+                jackpot_count = 1
             for i in range(N):
                 if (x[i] - event.pos[0]) ** 2 + (y[i] - event.pos[1]) ** 2 <= r[i] ** 2:  # if the click hit the ball
                     print('Click!')
-                    count += 1
-                    E[i] = 0
+                    pg.mixer.Sound.play(chpok)
+                    score += 1
+                    re_ball(i)
+                    for i in range(N):
+                        if color[0] == color[i]:
+                            jackpot_count += 1
+                        if jackpot_count == N + 1:
+                            print('Jackpot!')
+                            score += N + len(COLORS)
+                            jackpot_count = -999  # won't allow take jackpot 2 times per game
     for i in range(N):
-        if E[i] == 1:
-            x[i] += Vx[i]
-            y[i] += Vy[i]
-            circle(screen, color[i], (x[i], y[i]), r[i])
-        else:  # doesn't draw after-click balls on visible screen
-            x[i], y[i] = -1, -1
-            r[i] = 0
-        if x[i] <= 0:  # physics of hits
-            x[i] = 0
-            Vx[i] = -Vx[i]
-        elif x[i] >= size:
-            x[i] = size
-            Vx[i] = -Vx[i]
-        elif y[i] <= 0:
-            y[i] = 0
-            Vy[i] = -Vy[i]
-        elif y[i] >= size:
-            y[i] = size
-            Vy[i] = -Vy[i]
-    pygame.display.update()
+        x[i] += Vx[i]
+        y[i] += Vy[i]
+        circle(screen, color[i], (x[i], y[i]), r[i])
+        physics_of_hit(i)
+
+    pg.display.update()
     screen.fill(BLACK)
 
-pygame.quit()
+pg.quit()
