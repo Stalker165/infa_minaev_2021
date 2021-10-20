@@ -1,5 +1,4 @@
 import pygame as pg
-import pandas as pd
 from pygame.draw import *
 from random import randint
 pg.init()
