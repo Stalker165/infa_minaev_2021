@@ -1,4 +1,5 @@
 import pygame as pg
+import pandas as pd
 from pygame.draw import *
 from random import randint
 pg.init()
@@ -24,10 +25,16 @@ g = 1.2  # acceleration of gravity
 mu = 0.9  # variable makes extra physics for extra target
 E = 0  # variable of existence of extra target
 
+x = [0] * (N + 1)
+y = [0] * (N + 1)
+Vx = [0] * (N + 1)
+Vy = [0] * (N + 1)
+r = [0] * (N + 1)
+color = [0] * (N + 1)
 
 def parameters(n):
     """
-    choose random parameters of coordinates (x, y), speed (Vx, Vy), radius (r), color for balls
+    choose random parameters of coordinates (x, y), velocity (Vx, Vy), radius (r), color for balls
     returns these parameters as list
     n -- variable influences V and r (n = 1 for balls and n = 2 for extra target -- faster and smaller)
     """
@@ -45,16 +52,10 @@ def new_ball(N):
     creates lists of parameters for balls and extra target with index N
     creates ball with random parameters and makes parameters of position and radius global
     x, y -- coordinates
+    Vx, Vy -- velocity
     r -- radius
     N -- number of balls
     """
-    global x, y, Vx, Vy, r, color
-    x = [0] * (N+1)
-    y = [0] * (N+1)
-    Vx = [0] * (N+1)
-    Vy = [0] * (N+1)
-    r = [0] * (N+1)
-    color = [0] * (N+1)
     for i in range(0, N):
         x[i], y[i], Vx[i], Vy[i], r[i], color[i] = parameters(1)
         circle(screen, color[i], (x[i], y[i]), r[i])
@@ -63,6 +64,10 @@ def new_ball(N):
 def re_ball(i):
     """
     describes behavior of ball after click -- recreate the ball like new
+    x, y -- coordinates
+    Vx, Vy -- velocity
+    r -- radius
+    color -- color
     i -- number of ball
     """
     x[i], y[i], Vx[i], Vy[i], r[i], color[i] = parameters(1)
@@ -115,9 +120,10 @@ def extra_target():
     """
     creates very fast and small target shimmers with colors from COLORS
     target subjects to gravity
-    x_e, y_e -- coordinates
-    Vx_e, Vy_e -- velocity
-    color_e -- color
+    x, y -- coordinates
+    Vx, Vy -- velocity
+    r -- radius
+    color -- color
     E -- variable of existing (1 -> exists, 0 -> not exists)
     """
     global E
@@ -127,13 +133,10 @@ def extra_target():
         circle(screen, color[N], (x[N], y[N]), r[N])
 
 
-# print('Введите своё имя: ')
-# name = str(input())
-name = 'player'
-
 pg.mixer.init()
 chpok = pg.mixer.Sound('chpok.ogg')
 extra = pg.mixer.Sound('extra.ogg')
+jackpot = pg.mixer.Sound('jackpot.ogg')
 pg.mixer.music.load('forest theme.mp3')
 
 pg.display.update()
@@ -153,11 +156,11 @@ while not finished and timer <= 2999:
 
     text = font.render(str(score), True, WHITE)
     place = text.get_rect(center=(size / 3, 30))
-    screen.blit(text, place)  # creates text with count
+    screen.blit(text, place)  # creates text with score
 
-    text = font.render(str(int((timer * 30 / 1000) // 1)), True, WHITE)
+    text = font.render(str(90 - int((timer * 30 / 1000) // 1)), True, WHITE)
     place = text.get_rect(center=(3 * size / 4, 30))
-    screen.blit(text, place)  # creates text with timer
+    screen.blit(text, place)  # creates text with countdown
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -168,25 +171,24 @@ while not finished and timer <= 2999:
             for i in range(N):
                 if (x[i] - event.pos[0]) ** 2 + (y[i] - event.pos[1]) ** 2 <= r[i] ** 2:
                     # if the click hits the ball
-                    print('Click!')
                     pg.mixer.Sound.play(chpok)
+                    print('Click!')
                     score += 1
                     re_ball(i)
                     for i in range(N):
                         if color[0] == color[i]:
                             jackpot_count += 1
                         if jackpot_count == N + 1:
+                            pg.mixer.Sound.play(jackpot)
                             print('Jackpot!')
                             score += N + len(COLORS)
                             jackpot_count = -999  # won't allow take jackpot 2 times per game
             if (x[N] - event.pos[0]) ** 2 + (y[N] - event.pos[1]) ** 2 <= r[N] ** 2:
-                print('EXTRA Click!')
                 pg.mixer.Sound.play(extra)
+                print('EXTRA Click!')
                 score += 10
-                E = 0
+                E, extra_timer, r[N] = 0, 0, 0
                 x[N], y[N] = -1, -1
-                r[N] = 0
-                extra_timer = 0
     if timer % (18 * FPS) == 0:
         extra_target()
     for i in range(N):
@@ -203,5 +205,38 @@ while not finished and timer <= 2999:
             extra_timer = 0
     pg.display.update()
     screen.fill(BLACK)
-
 pg.quit()
+
+print('YOUR SCORE: ', score)
+print('Enter your name: ')
+name_now = str(input())
+if len(name_now) < 9:
+    name_now = name_now + ' ' * (9 - len(name_now))
+
+line_count = 0
+place = []
+name = []
+result = []
+with open('Balls game leaders.txt', 'r') as f:
+    tab = f.read
+    for line in f:
+        name.append(line.split(' | ')[1])
+        result.append(line.split(' | ')[2])
+        result[line_count] = int(result[line_count].replace("\n", ""))
+        line_count += 1
+
+place_now = line_count
+for i in range(0, line_count):
+    if score > int(result[i]):
+        place_now = i
+        break
+
+name.insert(place_now, name_now)
+result.insert(place_now, score)
+
+with open('Balls game leaders.txt', 'w') as file:
+    for i in range(0, line_count + 1):
+        stroka = str(i+1) + ' | ' + str(name[i]) + ' | ' + str(result[i]) + '\n'
+        file.write(stroka)
+
+print('Your place:', place_now + 1)
