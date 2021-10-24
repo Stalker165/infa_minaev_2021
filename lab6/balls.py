@@ -31,6 +31,7 @@ Vy = [0] * (N + 1)
 r = [0] * (N + 1)
 color = [0] * (N + 1)
 
+
 def parameters(n):
     """
     choose random parameters of coordinates (x, y), velocity (Vx, Vy), radius (r), color for balls
@@ -99,8 +100,9 @@ def physics(i, mu):
     x[i] += Vx[i]
     y[i] += Vy[i]
     if i == N:
-        Vy[N] += g * (y[N] - size / 2) / abs(y[N] - size / 2)
-        Vx[N] += g * (x[N] - size / 2) / abs(x[N] - size / 2)
+        # 0.5 to avoid division by zero
+        Vy[N] += g * (y[N] - size / 2 + 0.5) / abs(y[N] - size / 2 + 0.5)
+        Vx[N] += g * (x[N] - size / 2 + 0.5) / abs(x[N] - size / 2 + 0.5)
     if x[i] - r[i] <= 0:  # physics of hits
         x[i] = r[i]
         Vx[i] = -Vx[i] * mu
@@ -127,7 +129,7 @@ def extra_target():
     """
     global E
     E = 1
-    for i in range(0, N):
+    for _ in range(0, N):
         x[N], y[N], Vx[N], Vy[N], r[N], color[N] = parameters(2)
         circle(screen, color[N], (x[N], y[N]), r[N])
 
@@ -210,7 +212,7 @@ print('YOUR SCORE: ', score)
 print('Enter your name: ')
 name_now = str(input())
 if len(name_now) < 9:
-    name_now = name_now + ' ' * (9 - len(name_now))
+    name_now = ' ' * (9 - len(name_now)) + name_now
 
 line_count = 0
 place = []
