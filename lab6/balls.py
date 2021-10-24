@@ -129,7 +129,7 @@ def extra_target():
     """
     global E
     E = 1
-    for _ in range(0, N):
+    for i in range(0, N):
         x[N], y[N], Vx[N], Vy[N], r[N], color[N] = parameters(2)
         circle(screen, color[N], (x[N], y[N]), r[N])
 
@@ -159,7 +159,7 @@ while not finished and timer <= 2999:
     place = text.get_rect(center=(size / 3, 30))
     screen.blit(text, place)  # creates text with score
 
-    text = font.render(str(90 - int((timer * 30 / 1000) // 1)), True, WHITE)
+    text = font.render(str(90 - int((timer * FPS / 1000) // 1)), True, WHITE)
     place = text.get_rect(center=(3 * size / 4, 30))
     screen.blit(text, place)  # creates text with countdown
 
