@@ -198,7 +198,7 @@ while not finished and timer <= 2999:
     if E == 1:
         physics(N, mu)
         extra_timer += 1
-        if timer % (FPS/2) == 0:
+        if E == 1 and timer % (FPS/2) == 0:
             color[N] = COLORS[randint(0, len(COLORS) - 1)]
         circle(screen, color[N], (x[N], y[N]), r[N])
         if extra_timer == 6 * FPS:
