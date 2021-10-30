@@ -21,15 +21,14 @@ HEIGHT = 600
 g = 6  # acceleration of gravity
 mu = 0.85  # variable of energy loss
 N = 1  # number of targets
-M = 4  # magazine of weapon
 
 
 def draw_text(surf, text, size, x, y):
     """
-    writes text on screen to show count
-    surf -- surface of drawing
-    size -- size of text
-    x, y -- position
+    Генерирует текст
+    surf - поверхность рисования
+    size - размер
+    x, y - местоположение
     """
     font = pg.font.Font(font_name, size)
     text_surface = font.render(text, True, WHITE)
@@ -40,15 +39,14 @@ def draw_text(surf, text, size, x, y):
 
 class Ball:
     def __init__(self, x=40, y=450):
-        """ Конструктор класса ball
+        """ Конструктор класса Ball
 
-        Args:
-        x, y -- координаты по горизонтали и вертикали соотв.
+        x, y - координаты по горизонтали и вертикали соотв.
         r - радиус
-        vx, vy -- скорости по горизонтали и вертикали соотв.
-        color -- цвет
-        timer -- таймер, не позволяет шарам оставаться на экране слишком долго
-        hit -- переменная, проверяющая, была ли уже сбита цель этим мячом
+        vx, vy - скорости по горизонтали и вертикали соотв.
+        color - цвет
+        timer - таймер, не позволяет шарам оставаться на экране слишком долго
+        hit - переменная, проверяющая, была ли уже сбита цель этим шаром
         """
         self.x = x
         self.y = y
@@ -60,13 +58,13 @@ class Ball:
         self.hit = 0
 
     def move(self):
-        """Переместить мяч по прошествии единицы времени.
+        """ Перемещение шара по прошествии единицы времени.
 
-        Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
-        self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
-        и стен по краям окна (размер окна 800х600).
+        Метод описывает перемещение шара за один кадр перерисовки: обновляет значения
+        self.x и self.y в соответствиии со значениями self.vx и self.vy, силы гравитации g, действующей на шар,
+        и расстановки стен
         """
-        if self.timer <= 90:
+        if self.timer <= FPS * 3:
             self.x += self.vx
             self.y += self.vy
             self.vy += g
@@ -85,18 +83,18 @@ class Ball:
             del self
 
     def draw(self):
+        """ Рисование шара """
         if self.timer <= FPS * 3:
             pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
     def hittest(self, obj):
-        """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
+        """ Метод проверяет, сталкивалкивается ли шар с объектом obj.
 
         Args:
-            obj: Обьект, с которым проверяется столкновение.
+            obj: Объект, с которым проверяется столкновение.
         Returns:
-            Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
+            Возвращает True в случае столкновения шара и obj, иначе - False.
         """
-        # FIXME
         if math.sqrt((self.x - obj.x)**2 + (self.y - obj.y)**2) <= self.r + obj.r:
             return True
         else:
@@ -105,54 +103,67 @@ class Ball:
 
 class Gun:
     def __init__(self):
-        self.f2_power = 10
-        self.f2_on = 0
-        self.an = 1
+        """ Инициализация параметров
+        M - магазин
+        firepower - начальная силы выстрела
+        ready - готовность к выстрелу
+        angle, color - угол и цвет соотв.
+        """
+        self.M = 4
+        self.firepower = 10
+        self.ready = 0
+        self.angle = 1
         self.color = GREY
 
-    def fire2_start(self, event):
-        self.f2_on = 1
+    def fire(self, event):
+        """ Выстрел шаром
 
-    def fire2_end(self, event):
-        """Выстрел мячом.
-
-        Происходит при отпускании кнопки мыши.
-        Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
+        Происходит при отпускании кнопки мыши
+        Начальные значения компонент скорости шара vx и vy зависят от положения мыши
         """
         global balls
         new_ball = Ball()
         new_ball.r += 5
-        self.an = math.atan2((450 - event.pos[1]), event.pos[0] - 40)
-        new_ball.vx = self.f2_power * math.cos(self.an)
-        new_ball.vy = - self.f2_power * math.sin(self.an)
+        self.angle = math.atan2((450 - event.pos[1]), event.pos[0] - 40)
+        new_ball.vx = self.firepower * math.cos(self.angle)
+        new_ball.vy = - self.firepower * math.sin(self.angle)
         balls.append(new_ball)
-        self.f2_on = 0
-        self.f2_power = 10
+        self.ready = 0
+        self.firepower = 10
 
-    def targetting(self, event):
-        """Прицеливание. Зависит от положения мыши."""
+    def aiming(self, event):
+        """ Прицеливание. Зависит от положения мыши, считываемого через event """
         if event:
-            self.an = math.atan2((450 - event.pos[1]), event.pos[0] - 40)
-        if self.f2_on:
+            self.angle = math.atan2((450 - event.pos[1]), event.pos[0] - 40)
+        if self.ready:
             self.color = NAVY
         else:
             self.color = GREY
 
     def draw(self):
-        pygame.draw.line(screen, self.color, [40, 450], [40 + self.f2_power * math.cos(self.an),
-                                                         450 - self.f2_power * math.sin(self.an)], 4)
+        """ Рисование пушки в зависимости от направления и времени удержания кнопки мыши """
+        pygame.draw.line(screen, self.color, [40, 450], [40 + self.firepower * math.cos(self.angle),
+                                                         450 - self.firepower * math.sin(self.angle)], 4)
 
     def power_up(self):
-        if self.f2_on:
-            if self.f2_power < 100:
-                self.f2_power += 4
-            self.color = NAVY
+        """
+        Определение силы выстрела и параметров самой пушки
+        в зависимости от времени удержания кнопки мыши
+        """
+        if self.ready:
+            if self.firepower < 100:
+                self.firepower += 4
+            if self.M != 0:
+                self.color = NAVY
+            else:
+                self.color = GREY
         else:
             self.color = GREY
 
 
 class Target:
     def __init__(self):
+        """ Задание параметров цели """
         self.x = random.randint(600, 780)
         self.y = random.randint(300, 550)
         self.vx = random.randint(-20, 20)
@@ -161,19 +172,14 @@ class Target:
         self.color = random.choice(GAME_COLORS)
 
     def par_target(self):
-        """ Инициализация новой цели. """
-        self.x = random.randint(600, 780)
-        self.y = random.randint(300, 550)
-        self.vx = random.randint(-20, 20)
-        self.vy = random.randint(-20, 20)
-        self.r = random.randint(20, 50)
-        self.color = random.choice(GAME_COLORS)
+        """ Изменение параметров цели """
+        self.__init__()
 
     def move(self):
-        """Переместить цель по прошествии единицы времени.
+        """ Перемещение
 
-        Метод описывает перемещение цели за один кадр перерисовки. То есть, обновляет значения
-        self.x и self.y с учетом скоростей self.vx и self.vy и стен по краям окна (размер окна 800х600).
+        Метод описывает перемещение цели за один кадр перерисовки: обновляет значения
+        self.x и self.y с учетом скоростей self.vx и self.vy и расстановки стен.
         """
 
         self.x += self.vx
@@ -193,6 +199,7 @@ class Target:
             self.vy = - self.vy
 
     def draw(self):
+        """ Рисование мишени """
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
 
@@ -208,7 +215,7 @@ score = 0
 
 clock = pygame.time.Clock()
 gun = Gun()
-for _ in range (N):
+for _ in range(N):
     targets.append(Target())
 
 finished = False
@@ -224,9 +231,9 @@ while not finished and timer <= FPS * 90:
     place = text.get_rect(center=(WIDTH / 3, 30))
     screen.blit(text, place)  # creates text with score
 
-    text = font.render(str(90 - int((timer * FPS / 900) // 1)), True, NAVY)
+    text = font.render(str(90 - int(timer // FPS)), True, NAVY)
     place = text.get_rect(center=(3 * WIDTH / 4, 30))
-    screen.blit(text, place)  # creates text with countdown"""
+    screen.blit(text, place)  # creates text with countdown
 
     pygame.display.update()
 
@@ -236,15 +243,17 @@ while not finished and timer <= FPS * 90:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            gun.fire2_start(event)
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if M > 0:
-                gun.fire2_end(event)
-                M -= 1
+            if gun.M != 0:
+                gun.ready = 1
             else:
                 print("Это тебе не кино, приятель! Патроны не бесконечны!")
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if gun.ready:
+                gun.fire(event)
+                gun.M -= 1
         elif event.type == pygame.MOUSEMOTION:
-            gun.targetting(event)
+            gun.aiming(event)
+
     for b in balls:
         b.move()
         for t in targets:
@@ -254,19 +263,20 @@ while not finished and timer <= FPS * 90:
                 if score % 10 == 0:
                     N = N + 1
                     targets.append(Target())
+
     for t in targets:
         t.move()
-    new_N = int((N/10) // 1 + 1)
+    new_N = int((N / 10) // 1 + 1)
     for _ in range(new_N - N):
         targets.append(Target())
     N = new_N
     gun.power_up()
 
-    if M < 5 and timer % 30 == 0:
-        M += 1
+    if gun.M < 5 and timer % 30 == 0:
+        gun.M += 1
 
     if timer % (FPS * 30) == 0:
-        print("Прошло ", int(timer/FPS), " секунд.")
+        print("Прошло ", int(timer / FPS), " секунд.")
 pygame.quit()
 
 print('YOUR SCORE: ', score)
