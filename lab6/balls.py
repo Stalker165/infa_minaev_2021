@@ -129,9 +129,8 @@ def extra_target():
     """
     global E
     E = 1
-    for i in range(0, N):
-        x[N], y[N], Vx[N], Vy[N], r[N], color[N] = parameters(2)
-        circle(screen, color[N], (x[N], y[N]), r[N])
+    x[N], y[N], Vx[N], Vy[N], r[N], color[N] = parameters(2)
+    circle(screen, color[N], (x[N], y[N]), r[N])
 
 
 pg.mixer.init()
@@ -167,8 +166,6 @@ while not finished and timer <= 2999:
         if event.type == pg.QUIT:
             finished = True
         elif event.type == pg.MOUSEBUTTONDOWN:
-            if jackpot_count > 0:
-                jackpot_count = 1
             for i in range(N):
                 if (x[i] - event.pos[0]) ** 2 + (y[i] - event.pos[1]) ** 2 <= r[i] ** 2:
                     # if the click hits the ball
@@ -176,6 +173,8 @@ while not finished and timer <= 2999:
                     print('Click!')
                     score += 1
                     re_ball(i)
+                    if jackpot_count > 0:
+                        jackpot_count = 1
                     for i in range(N):
                         if color[0] == color[i]:
                             jackpot_count += 1
