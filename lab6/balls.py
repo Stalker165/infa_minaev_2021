@@ -75,7 +75,7 @@ def re_ball(i):
 
 def draw_text(surf, text, size, x, y):
     """
-    writes text on screen to show count
+    writes text on screen
     surf -- surface of drawing
     size -- size of text
     x, y -- position
