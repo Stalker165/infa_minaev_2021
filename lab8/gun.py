@@ -88,12 +88,8 @@ class Ball:
             pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
     def hittest(self, obj):
-        """ Метод проверяет, сталкивалкивается ли шар с объектом obj.
-
-        Args:
-            obj: Объект, с которым проверяется столкновение.
-        Returns:
-            Возвращает True в случае столкновения шара и obj, иначе - False.
+        """ Метод проверяет, сталкивалкивается ли шар с объектом obj и возвращает True, если сталкивается
+        и False в противном случае.
         """
         if math.sqrt((self.x - obj.x)**2 + (self.y - obj.y)**2) <= self.r + obj.r:
             return True
@@ -101,71 +97,11 @@ class Ball:
             return False
 
 
-class Gun:
-    def __init__(self):
-        """ Инициализация параметров
-        M - магазин
-        firepower - начальная силы выстрела
-        ready - готовность к выстрелу
-        angle, color - угол и цвет соотв.
-        """
-        self.M = 4
-        self.firepower = 10
-        self.ready = 0
-        self.angle = 1
-        self.color = GREY
-
-    def fire(self, event):
-        """ Выстрел шаром
-
-        Происходит при отпускании кнопки мыши
-        Начальные значения компонент скорости шара vx и vy зависят от положения мыши
-        """
-        global balls
-        new_ball = Ball()
-        new_ball.r += 5
-        self.angle = math.atan2((450 - event.pos[1]), event.pos[0] - 40)
-        new_ball.vx = self.firepower * math.cos(self.angle)
-        new_ball.vy = - self.firepower * math.sin(self.angle)
-        balls.append(new_ball)
-        self.ready = 0
-        self.firepower = 10
-
-    def aiming(self, event):
-        """ Прицеливание. Зависит от положения мыши, считываемого через event """
-        if event:
-            self.angle = math.atan2((450 - event.pos[1]), event.pos[0] - 40)
-        if self.ready:
-            self.color = NAVY
-        else:
-            self.color = GREY
-
-    def draw(self):
-        """ Рисование пушки в зависимости от направления и времени удержания кнопки мыши """
-        pygame.draw.line(screen, self.color, [40, 450], [40 + self.firepower * math.cos(self.angle),
-                                                         450 - self.firepower * math.sin(self.angle)], 4)
-
-    def power_up(self):
-        """
-        Определение силы выстрела и параметров самой пушки
-        в зависимости от времени удержания кнопки мыши
-        """
-        if self.ready:
-            if self.firepower < 100:
-                self.firepower += 4
-            if self.M != 0:
-                self.color = NAVY
-            else:
-                self.color = GREY
-        else:
-            self.color = GREY
-
-
 class Target:
     def __init__(self):
         """ Задание параметров цели """
-        self.x = random.randint(600, 780)
-        self.y = random.randint(300, 550)
+        self.x = random.randint(WIDTH/2, WIDTH)
+        self.y = random.randint(0, HEIGHT)
         self.vx = random.randint(-20, 20)
         self.vy = random.randint(-20, 20)
         self.r = random.randint(20, 50)
@@ -176,8 +112,7 @@ class Target:
         self.__init__()
 
     def move(self):
-        """ Перемещение
-
+        """
         Метод описывает перемещение цели за один кадр перерисовки: обновляет значения
         self.x и self.y с учетом скоростей self.vx и self.vy и расстановки стен.
         """
@@ -201,6 +136,113 @@ class Target:
     def draw(self):
         """ Рисование мишени """
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
+
+
+class Trojan:
+    def __init__(self):
+        """ Инициализация параметров "бомбочки", содержащей в себе другие цели """
+        self.x = random.randint(0, WIDTH)
+        self.y = random.randint(0, HEIGHT)
+        self.vx = random.randint(-5, 5)
+        self.vy = random.randint(-5, 5)
+        self.color = random.choice(GAME_COLORS)
+
+    def move(self):
+        """ Перемещение бомбы по прошествии единицы времени.
+
+        Метод описывает перемещение шара за один кадр перерисовки: обновляет значения
+        self.x и self.y в соответствиии со значениями self.vx и self.vy, силы гравитации g, действующей на шар,
+        и расстановки стен
+        """
+        if self.timer <= FPS * 3:
+            self.x += self.vx
+            self.y += self.vy
+            self.vy += g
+            if self.x + self.r >= WIDTH:
+                self.x = WIDTH - self.r
+                self.vx = - self.vx * mu
+            elif self.y - self.r <= 0:
+                self.y = self.r
+                self.vy = - self.vy * mu + g
+            elif self.y + self.r >= HEIGHT:
+                self.y = HEIGHT - self.r
+                self.vy = - self.vy * mu + g
+            self.timer += 1
+        else:
+            self.x, self.y, self.vx, self.vy = -1, -1, 0, 0
+            del self
+
+    def draw(self):
+        """ Рисование шара """
+        if self.timer <= FPS * 3:
+            pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
+
+    def hittest(self, obj):
+        """ Метод проверяет, сталкивалкивается ли шар с объектом obj.
+
+            obj: Объект, с которым проверяется столкновение.
+            Возвращает True в случае столкновения шара и obj, иначе - False.
+        """
+        return self.collidepoint(obj)
+
+
+class Gun:
+    def __init__(self):
+        """ Инициализация параметров орудия
+        M - магазин
+        firepower - начальная силы выстрела
+        ready - готовность к выстрелу
+        angle, color - угол и цвет соотв.
+        """
+        self.M = 4
+        self.firepower = 20
+        self.ready = 0
+        self.angle = 1
+        self.color = NAVY
+
+    def fire(self, event):
+        """ Выстрел шаром
+
+        Происходит при отпускании кнопки мыши
+        Начальные значения компонент скорости шара vx и vy зависят от положения мыши
+        """
+        global balls
+        new_ball = Ball()
+        new_ball.r += 5
+        self.angle = math.atan2((450 - event.pos[1]), event.pos[0] - 40)
+        new_ball.vx = self.firepower * math.cos(self.angle)
+        new_ball.vy = - self.firepower * math.sin(self.angle)
+        balls.append(new_ball)
+        self.ready = 0
+        self.firepower = 20
+
+    def aiming(self, event):
+        """ Прицеливание. Зависит от положения мыши, считываемого через event """
+        if event:
+            self.angle = math.atan2((450 - event.pos[1]), event.pos[0] - 40)
+        if self.M != 0:
+            self.color = NAVY
+        else:
+            self.color = GREY
+
+    def draw(self):
+        """ Рисование пушки в зависимости от направления и времени удержания кнопки мыши """
+        pygame.draw.line(screen, self.color, [40, 450], [40 + self.firepower * math.cos(self.angle),
+                                                         450 - self.firepower * math.sin(self.angle)], 8)
+        pygame.draw.circle(screen, self.color, [40, 450], 15)
+
+    def power_up(self):
+        """
+        Определение силы выстрела и параметров самой пушки
+        в зависимости от времени удержания кнопки мыши
+        """
+        if self.ready:
+            if self.firepower < 100:
+                self.firepower += 4
+        if self.M != 0:
+            self.color = NAVY
+        else:
+            self.color = GREY
 
 
 pygame.init()
